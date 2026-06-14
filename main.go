@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"log"
 	"os"
 	"os/signal"
@@ -10,7 +11,6 @@ import (
 	"github.com/example/mqttdemo/logger"
 	"github.com/example/mqttdemo/pkg/mqttprocessor"
 	"github.com/example/mqttdemo/pkg/mqttservice"
-	"gopkg.in/yaml.v3"
 )
 
 func main() {
@@ -41,11 +41,11 @@ func main() {
 
 	// Start MQTT Processor
 	var cfg mqttprocessor.Config
-	data, err := os.ReadFile("config/mqtt_processor.yaml")
+	data, err := os.ReadFile("config/mqtt_processor.json")
 	if err != nil {
 		log.Fatalf("failed to read config file: %v", err)
 	}
-	if err := yaml.Unmarshal(data, &cfg); err != nil {
+	if err := json.Unmarshal(data, &cfg); err != nil {
 		log.Fatalf("failed to parse config: %v", err)
 	}
 	processor := mqttprocessor.NewProcessor(cfg)
