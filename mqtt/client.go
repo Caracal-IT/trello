@@ -2,7 +2,7 @@
 // eclipse/paho.mqtt.golang. It adds:
 //
 //   - Functional options for ergonomic configuration
-//   - Automatic re-subscription after reconnect
+//   - Automatic re-subscription after reconnection
 //   - Synchronous Publish and non-blocking PublishAsync
 //   - A clean separation between Message/Handler types and paho internals
 package mqtt
@@ -15,7 +15,7 @@ import (
 )
 
 // subscription pairs a Handler with the QoS level it was registered with so
-// we can faithfully re-subscribe after a reconnect.
+// we can faithfully re-subscribe after a reconnection.
 type subscription struct {
 	handler Handler
 	qos     byte
