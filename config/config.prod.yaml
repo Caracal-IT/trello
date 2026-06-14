@@ -1,0 +1,29 @@
+# config.prod.yaml — merged on top of config.yaml when APP_ENV=prod
+app:
+  env: prod
+
+mqtt:
+  broker: "tls://mqtt.example.com:8883"
+  clientID: "mqttdemo-prod"
+
+logging:
+  level: "info"
+
+  overrides:
+    "mqtt":      "warn"    # silence chatty mqtt internals in prod
+    "publisher": "info"
+
+  sinks:
+    console:
+      enabled: true
+      format: "json"       # structured JSON for log aggregators (Filebeat, Fluentd, …)
+      colorized: false
+
+    elasticsearch:
+      enabled: true
+      url: "https://elastic.example.com:9200"
+      index: "mqttdemo-logs-prod"
+      username: "elastic"
+      password: "changeme"
+      bulkSize: 500
+      flushInterval: "10s"

@@ -1,0 +1,86 @@
+# ==============================================================================
+# THE FINAL SUPER DUPER ULTIMATE SEGMENTED ENTERPRISE TELEMETRY STACK
+# All relative asset file paths bound strictly to the local 'docker/' directory.
+# ==============================================================================
+
+name: "trello"
+
+services:
+  # ─── Mosquitto MQTT Broker (External Facing IoT Gateway) ────────────────────
+  mosquitto:
+    image: eclipse-mosquitto:2.0.18
+    container_name: mosquitto
+    restart: unless-stopped
+    ports:
+      - "1883:1883" # Standard MQTT TCP Port
+      - "9001:9001" # WebSockets
+    volumes:
+      - ./mosquitto/config/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+      - ./mosquitto/data:/mosquitto/data
+    networks:
+      - telemetry-network
+
+  # ─── Filebeat 9.x (MQTT Streamer Pipeline) ──────────────────────────────────
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:9.4.2
+    container_name: filebeat
+    user: root
+    restart: unless-stopped
+    volumes:
+      - ./filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+    networks:
+      - telemetry-network
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+
+  # ─── Elasticsearch 9.x (Internal Analytical Vault Store) ─────────────────────
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:9.4.2
+    container_name: elasticsearch
+    restart: unless-stopped
+    environment:
+      - node.name=elasticsearch
+      - cluster.name=es-docker-cluster
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - xpack.security.enabled=false # Local development bypass
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    ports:
+      - "127.0.0.1:9200:9200" # Secured strictly to host loopback interface
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:9200/_cluster/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - telemetry-network
+
+  # ─── Kibana 9.x (Data Visualization Dashboard) ──────────────────────────────
+  kibana:
+    image: docker.elastic.co/kibana/kibana:9.4.2
+    container_name: kibana
+    restart: unless-stopped
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - XPACK_SECURITY_ENABLED=false # Bypasses login screen to match ES cluster config
+    ports:
+      - "127.0.0.1:5601:5601" # Secured strictly to host loopback interface
+    networks:
+      - telemetry-network
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+
+volumes:
+  elasticsearch-data:
+
+networks:
+  telemetry-network:
+    driver: bridge

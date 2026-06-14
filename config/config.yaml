@@ -1,0 +1,37 @@
+app:
+  name: mqttdemo
+  env: dev
+
+mqtt:
+  broker: "tcp://broker.emqx.io:1883"
+  clientID: "go-mqttdemo"
+  keepAlive: "30s"
+  connectTimeout: "15s"
+  writeTimeout: "5s"
+  cleanSession: true
+  autoReconnect: true
+  username: ""
+  password: ""
+
+logging:
+  # Global minimum level: debug | info | warn | error | fatal
+  level: "info"
+
+  # Per-source overrides — longest prefix wins (Serilog-style).
+  # Source names are set via logger.New(…).For("source") or ForSource("source").
+  overrides: {}
+
+  sinks:
+    console:
+      enabled: true
+      format: "text"       # "text" for human-readable, "json" for log shippers
+      colorized: true
+
+    elasticsearch:
+      enabled: false
+      url: "http://localhost:9200"
+      index: "mqttdemo-logs"
+      username: ""
+      password: ""
+      bulkSize: 100
+      flushInterval: "5s"

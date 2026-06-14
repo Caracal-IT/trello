@@ -1,0 +1,18 @@
+# config.dev.yaml — merged on top of config.yaml when APP_ENV=dev (the default)
+logging:
+  level: "debug"
+
+  # Granular per-source overrides for local development.
+  # Keys are source prefixes: "mqtt" matches "mqtt", "mqtt.client", "mqtt.broker", …
+  overrides:
+    "mqtt":      "debug"
+    "publisher": "debug"
+    "main":      "info"
+
+  sinks:
+    console:
+      enabled: true
+      format: "text"
+      colorized: true
+    elasticsearch:
+      enabled: false

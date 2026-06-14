@@ -1,0 +1,26 @@
+# ==============================================================================
+# FILEBEAT 9.x NATIVE MQTT PIPELINE STREAMER CONFIGURATION
+# ==============================================================================
+
+filebeat.inputs:
+  - type: mqtt
+    hosts: ["tcp://mosquitto:1883"]          # Resolves internally over the iot-network
+    topics: ["#"]                            # Automatically subscribes to all telemetry channels
+
+# Processors handle real-time structural transformation inside network memory
+processors:
+  - decode_json_fields:                      # Auto-flattens payloads if formatted as JSON
+      fields: ["message"]
+      process_array: true
+      max_depth: 3
+      target: "sensor_payload"
+      overwrite_keys: false
+
+# Shipping directives delivering packets directly across the network boundary
+output.elasticsearch:
+  hosts: ["http://elasticsearch:9200"]      # Ships internally over the elastic-network
+  index: "telemetry-v9-%{+yyyy.MM.dd}"
+
+# Strict 9.x index template optimization parameters
+setup.template.name: "filebeat"
+setup.template.pattern: "telemetry-v9-*"
