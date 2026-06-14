@@ -22,11 +22,11 @@ type Config struct {
 }
 
 type SubProcessor struct {
-	Name     string   `json:"name"`
-	Keys     []Key    `json:"keys"`
-	Filters  []string `json:"filters"`
-	Timeout  string   `json:"timeout"`
-	Pipeline []string `json:"pipeline"`
+	Name     string         `json:"name"`
+	Keys     []Key          `json:"keys"`
+	Filters  []string       `json:"filters"`
+	Timeout  string         `json:"timeout"`
+	Pipeline []PipelineStep `json:"pipeline"`
 }
 
 type Key struct {

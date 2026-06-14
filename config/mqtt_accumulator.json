@@ -12,6 +12,22 @@
     ],
     "filters": ["motor"],
     "timeout": "10s",
-    "pipeline": ["print"]
+    "pipeline": [
+      "print",
+      {
+        "name": "render",
+        "config": {
+          "template": "Device {{.device}} - received {{len .payloads}} messages",
+          "output": "summary"
+        }
+      },
+      {
+        "name": "render",
+        "config": {
+          "template_file": "config/templates/alert.tmpl",
+          "output": "alert"
+        }
+      }
+    ]
   }
 }
