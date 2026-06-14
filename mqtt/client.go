@@ -95,10 +95,10 @@ func newClient(opts Options) (*Client, error) {
 // Subscription
 
 // Subscribe registers handler for the given topic filter and QoS level.
-// topic may include wildcards (+ and #).
-// Subscriptions survive reconnects automatically.
+// Topic may include wildcards (+ and #).
+// Subscriptions survive reconnections automatically.
 //
-//	err := c.Subscribe("sensors/#", mqtt.QoS1, func(msg mqtt.Message) {
+//	Err: = c.Subscribe("sensors/#", mqtt.QoS1, func(msg mqtt.Message) {
 //	    fmt.Printf("%s: %s\n", msg.Topic, msg.Payload)
 //	})
 func (c *Client) Subscribe(topic string, qos byte, handler Handler) error {
@@ -129,7 +129,7 @@ func (c *Client) Subscribe(topic string, qos byte, handler Handler) error {
 
 // SubscribeMultiple subscribes to several topic filters in a single SUBSCRIBE
 // packet. All topics share the same handler.
-// filters maps topic filter -> desired QoS level.
+// Filters maps topic filter -> desired QoS level.
 func (c *Client) SubscribeMultiple(filters map[string]byte, handler Handler) error {
 	c.mu.Lock()
 	for topic, qos := range filters {
@@ -183,7 +183,7 @@ func (c *Client) Unsubscribe(topics ...string) error {
 // Publish sends a message and blocks until the broker acknowledges it or the
 // write timeout expires.
 //
-// payload can be a string, []byte, or any fmt.Stringer.
+// The payload can be a string, []byte, or any fmt.Stringer.
 func (c *Client) Publish(topic string, qos byte, retained bool, payload any) error {
 	token := c.raw.Publish(topic, qos, retained, payload)
 	if !token.WaitTimeout(c.opts.WriteTimeout) {
