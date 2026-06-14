@@ -128,7 +128,10 @@ func (l *Logger) Close() {
 	sinks := l.sinks
 	l.mu.RUnlock()
 	for _, s := range sinks {
-		s.Close() //nolint:errcheck
+		err := s.Close()
+		if err != nil {
+			continue
+		}
 	}
 }
 
