@@ -73,15 +73,18 @@ func (s *Service) Start(ctx context.Context) error {
 	}
 	s.log.Info("Subscribed to {topic}", logger.Fields{"topic": topicWild})
 
-	// Start publish loop
-	go s.publishLoop()
+	go s.publishLoop(ctx)
 
-	// Async publish example
 	go func() {
-		time.Sleep(3 * time.Second)
-		errCh := s.client.PublishAsync(topicControl, mqtt.QoS0, false, `{"cmd":"ping"}`)
-		if err := <-errCh; err != nil {
-			log.Printf("async publish error: %v", err)
+		timer := time.NewTimer(3 * time.Second)
+		defer timer.Stop()
+		select {
+		case <-timer.C:
+			errCh := s.client.PublishAsync(topicControl, mqtt.QoS0, false, `{"cmd":"ping"}`)
+			if err := <-errCh; err != nil {
+				log.Printf("async publish error: %v", err)
+			}
+		case <-ctx.Done():
 		}
 	}()
 
@@ -97,7 +100,7 @@ func (s *Service) onMessage(msg mqtt.Message) {
 	fmt.Printf("  %s [%s] %s\n", icon, msg.Topic, msg.String())
 }
 
-func (s *Service) publishLoop() {
+func (s *Service) publishLoop(ctx context.Context) {
 	ticker := time.NewTicker(2 * time.Second)
 	defer ticker.Stop()
 
@@ -107,27 +110,33 @@ func (s *Service) publishLoop() {
 	compressor2Humid := 80.0
 	tick := 0
 
-	for range ticker.C {
-		tick++
+	for {
+		select {
+		case <-ticker.C:
+			tick++
 
-		motorTemp = motorTemp + (rand.Float64() * 4) - 2
-		motorHumid = motorHumid + (rand.Float64() * 4) - 2
-		s.publishSensorData(s.client, topicMotorData, motorTemp, motorHumid)
+			motorTemp = motorTemp + (rand.Float64() * 4) - 2
+			motorHumid = motorHumid + (rand.Float64() * 4) - 2
+			s.publishSensorData(topicMotorData, motorTemp, motorHumid)
 
-		compressor2Temp = compressor2Temp + (rand.Float64() * 4) - 2
-		compressor2Humid = compressor2Humid + (rand.Float64() * 4) - 2
-		s.publishSensorData(s.client, topicCompressor2Data, compressor2Temp, compressor2Humid)
+			compressor2Temp = compressor2Temp + (rand.Float64() * 4) - 2
+			compressor2Humid = compressor2Humid + (rand.Float64() * 4) - 2
+			s.publishSensorData(topicCompressor2Data, compressor2Temp, compressor2Humid)
 
-		if tick%10 == 0 {
-			status := fmt.Sprintf(`{"uptime_ticks":%d,"connected":%v}`, tick, s.client.IsConnected())
-			if err := s.client.Publish("mqttdemo/status", mqtt.QoS1, true, status); err != nil {
-				log.Printf("publish status: %v", err)
+			if tick%10 == 0 {
+				status := fmt.Sprintf(`{"uptime_ticks":%d,"connected":%v}`, tick, s.client.IsConnected())
+				if err := s.client.Publish("mqttdemo/status", mqtt.QoS1, true, status); err != nil {
+					log.Printf("publish status: %v", err)
+				}
 			}
+
+		case <-ctx.Done():
+			return
 		}
 	}
 }
 
-func (s *Service) publishSensorData(c *mqtt.Client, topic string, temp, humid float64) {
+func (s *Service) publishSensorData(topic string, temp, humid float64) {
 	payload := SensorData{
 		Temperature: temp,
 		Humidity:    humid,
@@ -139,7 +148,7 @@ func (s *Service) publishSensorData(c *mqtt.Client, topic string, temp, humid fl
 		return
 	}
 
-	if err := c.Publish(topic, mqtt.QoS1, false, jsonBytes); err != nil {
+	if err := s.client.Publish(topic, mqtt.QoS1, false, jsonBytes); err != nil {
 		log.Printf("publish data to %s: %v", topic, err)
 	}
 }

@@ -10,7 +10,6 @@ package mqtt
 import (
 	"fmt"
 	"sync"
-	"time"
 
 	paho "github.com/eclipse/paho.mqtt.golang"
 )
@@ -48,12 +47,6 @@ func New(broker, clientID string, opts ...Option) (*Client, error) {
 		fn(&o)
 	}
 	return newClient(o)
-}
-
-// NewWithOptions is like New but accepts a pre-filled Options struct.
-// Useful when configuration comes from a config file or environment.
-func NewWithOptions(opts Options) (*Client, error) {
-	return newClient(opts)
 }
 
 func newClient(opts Options) (*Client, error) {
@@ -248,10 +241,13 @@ func (c *Client) onConnect(pc paho.Client) {
 	c.mu.RUnlock()
 
 	for topic, s := range snapshot {
-		h := s.handler // pin loop variable for the closure
-		pc.Subscribe(topic, s.qos, func(_ paho.Client, m paho.Message) {
+		h := s.handler
+		token := pc.Subscribe(topic, s.qos, func(_ paho.Client, m paho.Message) {
 			h(fromPaho(m))
 		})
+		if !token.WaitTimeout(c.opts.WriteTimeout) {
+			continue
+		}
 	}
 
 	if c.opts.OnConnect != nil {
@@ -266,15 +262,3 @@ func (c *Client) onConnectionLost(_ paho.Client, err error) {
 }
 
 // Helpers
-
-// waitToken is a small helper used internally. Not exported intentionally
-// because callers should use Publish/Subscribe rather than raw tokens.
-func waitToken(token paho.Token, timeout time.Duration, op, subject string) error {
-	if !token.WaitTimeout(timeout) {
-		return fmt.Errorf("mqtt: %s %q: timed out", op, subject)
-	}
-	if err := token.Error(); err != nil {
-		return fmt.Errorf("mqtt: %s %q: %w", op, subject, err)
-	}
-	return nil
-}

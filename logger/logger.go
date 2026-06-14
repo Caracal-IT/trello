@@ -130,7 +130,7 @@ func (l *Logger) Close() {
 	for _, s := range sinks {
 		err := s.Close()
 		if err != nil {
-			continue
+			return
 		}
 	}
 }

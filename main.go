@@ -27,7 +27,7 @@ func main() {
 			logger.NewConsoleSink("text", true),
 			logger.NewElasticSink(logger.ElasticConfig{
 				URL:   "http://localhost:9200",
-				Index: "trello-logs",
+				Index: "mqttdemo-logs",
 			}),
 		},
 	})
@@ -68,6 +68,6 @@ func main() {
 	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
 	<-sig
 
-	log.Println("shutting down…")
+	log.Println("shutting down...")
 	cancel()
 }
