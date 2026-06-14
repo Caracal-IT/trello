@@ -1,5 +1,16 @@
 {
   "name": "mqtt-accumulator",
   "broker": "tcp://localhost:1883",
-  "topics": ["mqttdemo/#"]
+  "topics": ["mqttdemo/#"],
+  "sub-processor": {
+    "name": "processor-1",
+    "keys" : [
+      {
+        "name": "device",
+        "index": 0
+      }
+    ],
+    "filters": ["motor"],
+    "timeout": "10s"
+  }
 }
