@@ -1,7 +1,15 @@
 {
   "name": "mqtt-accumulator",
-  "broker": "tcp://localhost:1883",
-  "topics": ["mqttdemo/#"],
+  "sources": [
+    {
+      "name": "main",
+      "broker": "tcp://localhost:1883",
+      "topics": ["mqttdemo/#"]
+    }
+  ],
+  "destination": {
+    "broker": "tcp://localhost:1883"
+  },
   "sub-processor": {
     "name": "processor-1",
     "keys" : [
@@ -12,6 +20,10 @@
     ],
     "filters": ["motor"],
     "timeout": "10s",
+    "destination": {
+      "name": "processor-1-dest",
+      "topic": "accumulated/{{._source}}/{{.device}}"
+    },
     "pipeline": [
       "print",
       {
