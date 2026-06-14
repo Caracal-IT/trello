@@ -230,7 +230,7 @@ func (c *Client) Disconnect(quiesceMs uint) {
 // Internal callbacks
 
 // onConnect is called by paho on every successful connection, including
-// reconnections. We re-subscribe to all registered topics so sessions are
+// reconnections. We re-subscribe to all registered topics, so sessions are
 // automatically restored even with CleanSession=true.
 func (c *Client) onConnect(pc paho.Client) {
 	c.mu.RLock()
