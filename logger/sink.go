@@ -4,10 +4,10 @@ package logger
 // Implementations must be safe for concurrent use from multiple goroutines.
 //
 // Built-in sinks:
-//   - NewConsoleSink  – human-readable text or structured JSON to stdout
-//   - NewElasticSink  – async bulk-indexing into Elasticsearch
+//   - NewConsoleSink  - human-readable text or structured JSON to stdout
+//   - NewElasticSink  - async bulk-indexing into Elasticsearch
 //
-// To add a custom sink (file, Loki, Splunk, …) implement this two-method
+// To add a custom sink (file, Loki, Splunk, ...) implement this two-method
 // interface and pass it to logger.Config.Sinks.
 type Sink interface {
 	// Write receives a fully resolved LogEntry. It must not block the caller;

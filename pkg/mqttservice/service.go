@@ -18,7 +18,7 @@ type SensorData struct {
 	Humidity    float64 `json:"humidity"`
 }
 
-// Public broker endpoints — no account required.
+// Public broker endpoints - no account required.
 const broker = "tcp://localhost:1883"
 
 // Topic layout
@@ -59,7 +59,7 @@ func (s *Service) Start(ctx context.Context) error {
 			log.Println("✓ connected")
 		}),
 		mqtt.WithOnConnectionLost(func(_ *mqtt.Client, err error) {
-			log.Printf("✗ connection lost: %v – will reconnect…", err)
+			log.Printf("x connection lost: %v - will reconnect...", err)
 		}),
 	)
 	if err != nil {

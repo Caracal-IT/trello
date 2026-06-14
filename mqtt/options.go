@@ -7,9 +7,9 @@ import (
 
 // QoS levels as named constants.
 const (
-	QoS0 byte = 0 // At most once  – fire and forget
-	QoS1 byte = 1 // At least once – acknowledged delivery
-	QoS2 byte = 2 // Exactly once  – guaranteed, ordered delivery
+	QoS0 byte = 0 // At most once - fire and forget
+	QoS1 byte = 1 // At least once - acknowledged delivery
+	QoS2 byte = 2 // Exactly once - guaranteed, ordered delivery
 )
 
 // Options holds the full configuration for an MQTT Client.
@@ -80,7 +80,7 @@ func WithConnectTimeout(d time.Duration) Option {
 	}
 }
 
-// WithWriteTimeout sets the per-operation timeout (Subscribe, Publish, …).
+// WithWriteTimeout sets the per-operation timeout (Subscribe, Publish, ...).
 // Pass 0 to block indefinitely.
 func WithWriteTimeout(d time.Duration) Option {
 	return func(o *Options) {

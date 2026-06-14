@@ -15,7 +15,7 @@ var templateRE = regexp.MustCompile(`\{(\w+)\}`)
 // were not supplied:
 //
 //	RenderTemplate("Hello {name}, you are {age}", Fields{"name": "Ettiene"})
-//	→ "Hello Ettiene, you are {age}"
+//	-> "Hello Ettiene, you are {age}"
 func RenderTemplate(tmpl string, fields Fields) string {
 	if len(fields) == 0 {
 		return tmpl

@@ -66,13 +66,13 @@ func NewElasticSink(cfg ElasticConfig) *ElasticSink {
 }
 
 // Write enqueues entry. If the internal channel is full the entry is dropped
-// rather than blocking the caller — losing a log line is always preferable to
+// rather than blocking the caller - losing a log line is always preferable to
 // slowing down the application.
 func (s *ElasticSink) Write(entry LogEntry) {
 	select {
 	case s.ch <- entry:
 	default:
-		fmt.Fprintf(os.Stderr, "[elastic-sink] channel full – entry dropped (level=%s source=%s)\n",
+		fmt.Fprintf(os.Stderr, "[elastic-sink] channel full - entry dropped (level=%s source=%s)\n",
 			entry.Level.Short(), entry.Source)
 	}
 }
@@ -85,7 +85,7 @@ func (s *ElasticSink) Close() error {
 	return nil
 }
 
-// ── background goroutine ──────────────────────────────────────────────────────
+// background goroutine
 
 func (s *ElasticSink) run() {
 	defer s.wg.Done()
@@ -139,15 +139,15 @@ func (s *ElasticSink) flush() {
 	}
 }
 
-// ── HTTP / Elasticsearch ──────────────────────────────────────────────────────
+// HTTP / Elasticsearch
 
 // sendBulk serialises the batch using Elasticsearch's Bulk API (NDJSON).
 //
 //	POST /_bulk
-//	{"index":{"_index":"my-index"}}   ← action meta line
-//	{"@timestamp":"…","level":"…",…}  ← document line
+//	{"index":{"_index":"my-index"}}   <- action meta line
+//	{"@timestamp":"...","level":"...",...}  <- document line
 //	{"index":{"_index":"my-index"}}
-//	…
+//	...
 func (s *ElasticSink) sendBulk(entries []LogEntry) error {
 	var body bytes.Buffer
 
@@ -192,10 +192,10 @@ func (s *ElasticSink) sendBulk(entries []LogEntry) error {
 //	{
 //	  "@timestamp":      "2026-06-14T10:30:15.234Z",
 //	  "level":           "INFO",
-//	  "correlationId":   "a1b2c3d4-…",
+//	  "correlationId":   "a1b2c3d4-...",
 //	  "source":          "publisher",
-//	  "messageTemplate": "Temperature reading {temp}°C published",
-//	  "message":         "Temperature reading 20.3°C published",
+//	  "messageTemplate": "Temperature reading {temp}C published",
+//	  "message":         "Temperature reading 20.3C published",
 //	  "properties":      {"temp": 20.3, "sensorID": "node-01", "batch": 1}
 //	}
 func (s *ElasticSink) toDoc(e LogEntry) map[string]any {

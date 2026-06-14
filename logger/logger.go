@@ -40,13 +40,13 @@ import (
 	"github.com/google/uuid"
 )
 
-// ── context key ───────────────────────────────────────────────────────────────
+// context key
 
 // ctxKey is an unexported type to prevent collisions with other packages that
 // store values in context.
 type ctxKey struct{}
 
-// ── Config ────────────────────────────────────────────────────────────────────
+// Config
 
 // Config is the Logger's configuration.
 // It is intentionally independent of the config package so that the logger can
@@ -61,8 +61,8 @@ type Config struct {
 	//
 	// The longest prefix that is a prefix of the entry's source wins:
 	//
-	//   "mqtt"        → catches "mqtt", "mqtt.client", "mqtt.broker"
-	//   "mqtt.client" → beats the "mqtt" rule for exactly "mqtt.client"
+	//   "mqtt"        -> catches "mqtt", "mqtt.client", "mqtt.broker"
+	//   "mqtt.client" -> beats the "mqtt" rule for exactly "mqtt.client"
 	//
 	// Example:
 	//   Overrides: map[string]string{
@@ -76,7 +76,7 @@ type Config struct {
 	Sinks []Sink
 }
 
-// ── Logger ────────────────────────────────────────────────────────────────────
+// Logger
 
 type sourceOverride struct {
 	prefix string
@@ -96,7 +96,7 @@ type Logger struct {
 }
 
 // New creates a Logger from cfg. It is inexpensive and does not start any
-// goroutines — that is the responsibility of individual Sinks.
+// goroutines - that is the responsibility of individual Sinks.
 func New(cfg Config) *Logger {
 	l := &Logger{
 		globalLevel: ParseLevel(cfg.Level),
@@ -154,7 +154,7 @@ func (l *Logger) For(source string) *Log {
 //	ctx, log := logger.NewTransaction(ctx, "main")
 //	log.Info("Request received {path}", logger.Fields{"path": r.URL.Path})
 //
-//	// downstream – same correlationId, different source:
+//	// downstream - same correlationId, different source:
 //	dbLog := logger.ForContext(ctx, "db")
 func (l *Logger) NewTransaction(ctx context.Context, source string) (context.Context, *Log) {
 	id := uuid.New().String()
@@ -188,7 +188,7 @@ func (l *Logger) ForContext(ctx context.Context, source string) *Log {
 // effectiveLevelFor scans the override list and returns the most specific
 // (longest-prefix) level that applies to source, falling back to globalLevel.
 func (l *Logger) effectiveLevelFor(source string) Level {
-	// l.overrides is written once in New and never mutated — no lock needed.
+	// l.overrides is written once in New and never mutated - no lock needed.
 	best := -1
 	level := l.globalLevel
 	for _, o := range l.overrides {
@@ -213,13 +213,13 @@ func (l *Logger) emit(entry LogEntry) {
 	}
 }
 
-// ── Log (contextual logger) ───────────────────────────────────────────────────
+// Log (contextual logger)
 
 // Log is an immutable, contextual logger that carries a correlation ID, a
 // source name, and optional sticky fields. Every method that would alter state
 // returns a new *Log value; the original is always left unchanged.
 //
-// Create Log values only through Logger methods — never construct directly.
+// Create Log values only through Logger methods - never construct directly.
 type Log struct {
 	core          *Logger
 	correlationID string // UUID shared across one logical transaction
@@ -261,7 +261,7 @@ func (l *Log) WithCorrelationID(id string) *Log {
 //	// All entries from batchLog will carry sensorID and batch automatically.
 //	batchLog := pubLog.With(logger.Fields{"sensorID": "node-01", "batch": 7})
 //	batchLog.Info("Temperature {temp}°C", logger.Fields{"temp": 22.4})
-//	// → properties: {sensorID:"node-01", batch:7, temp:22.4}
+//	// -> properties: {sensorID:"node-01", batch:7, temp:22.4}
 func (l *Log) With(fields Fields) *Log {
 	merged := make(Fields, len(l.extraFields)+len(fields))
 	for k, v := range l.extraFields {
@@ -275,7 +275,7 @@ func (l *Log) With(fields Fields) *Log {
 	return &c
 }
 
-// ── Levelled write methods ────────────────────────────────────────────────────
+// Levelled write methods
 
 // Debug emits an entry at DEBUG level.
 // Suppressed unless the effective level for this source is DEBUG.
@@ -302,7 +302,7 @@ func (l *Log) Fatal(template string, fields ...Fields) {
 	// so that stack traces are preserved and deferred functions still run.
 }
 
-// ── internal ──────────────────────────────────────────────────────────────────
+// internal
 
 // write is the single hot-path dispatch point for all levelled methods.
 //

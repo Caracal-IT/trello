@@ -1,8 +1,8 @@
 // Package config loads layered YAML configuration.
 //
 // Load order:
-//  1. config.yaml          (base — required)
-//  2. config.{APP_ENV}.yaml  (env override — optional, defaults to "dev")
+//  1. config.yaml (base - required)
+//  2. config.{APP_ENV}.yaml (env override - optional, defaults to "dev")
 //
 // Env override values are deep-merged on top of the base, so you only need to
 // specify what differs in the env file.
@@ -17,7 +17,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// ── Duration ──────────────────────────────────────────────────────────────────
+// Duration
 
 // Duration wraps time.Duration so it unmarshals from YAML strings like "30s".
 type Duration struct{ time.Duration }
@@ -35,7 +35,7 @@ func (d Duration) MarshalYAML() (any, error) {
 	return d.Duration.String(), nil
 }
 
-// ── Config structs ────────────────────────────────────────────────────────────
+// Config structs
 
 // Config is the root application configuration.
 type Config struct {
@@ -70,8 +70,8 @@ type LoggingConfig struct {
 
 	// Overrides maps source-name prefixes to level strings.
 	// The longest matching prefix wins (Serilog-style):
-	//   "mqtt"        → matches "mqtt", "mqtt.client", "mqtt.broker"
-	//   "mqtt.client" → overrides the "mqtt" rule for that specific source
+	//   "mqtt"        -> matches "mqtt", "mqtt.client", "mqtt.broker"
+	//   "mqtt.client" -> overrides the "mqtt" rule for that specific source
 	Overrides map[string]string `yaml:"overrides"`
 
 	Sinks SinksConfig `yaml:"sinks"`
@@ -101,7 +101,7 @@ type ElasticsearchSinkConfig struct {
 	FlushInterval Duration `yaml:"flushInterval"`
 }
 
-// ── Loader ────────────────────────────────────────────────────────────────────
+// Loader
 
 // Load reads config.yaml from dir and deep-merges config.{APP_ENV}.yaml on top.
 // APP_ENV defaults to "dev" when not set.
@@ -139,7 +139,7 @@ func Load(dir string) (*Config, error) {
 	return &cfg, nil
 }
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+// Helpers
 
 func readYAML(path string) (map[string]any, error) {
 	data, err := os.ReadFile(path)

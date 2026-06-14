@@ -22,8 +22,8 @@ const (
 
 // ConsoleSink writes log entries to stdout.
 //
-//   - format "text"  →  human-readable, optionally with ANSI colour
-//   - format "json"  →  one JSON object per line (ready for Filebeat/Fluentd)
+//   - format "text"  -> human-readable, optionally with ANSI colour
+//   - format "json"  -> one JSON object per line (ready for Filebeat/Fluentd)
 type ConsoleSink struct {
 	out       io.Writer
 	useJSON   bool
@@ -52,11 +52,10 @@ func (s *ConsoleSink) Write(e LogEntry) {
 
 func (s *ConsoleSink) Close() error { return nil }
 
-// ── text format ───────────────────────────────────────────────────────────────
+// text format
 //
-// 2026-06-14 10:30:15.234 UTC [INF] [a1b2c3d4] [publisher       ] Temperature reading 20.3°C published
-// ─────────────────────────── ───── ────────── ─────────────────   ─────────────────────────────────────
-//  gray timestamp              col   gray corr  gray src (16 col)  default message
+// 2026-06-14 10:30:15.234 UTC [INF] [a1b2c3d4] [publisher       ] Temperature reading 20.3C published
+// gray timestamp              col   gray corr  gray src (16 col)  default message
 
 func (s *ConsoleSink) writeText(e LogEntry) {
 	ts := s.paint(ansiGray, e.Timestamp.UTC().Format("2006-01-02 15:04:05.000")+" UTC")
@@ -97,10 +96,10 @@ func (s *ConsoleSink) paint(code, text string) string {
 	return code + text + ansiReset
 }
 
-// ── JSON format ───────────────────────────────────────────────────────────────
+// JSON format
 //
-// {"@timestamp":"…","level":"INFO","correlationId":"…","source":"…",
-//  "messageTemplate":"…","message":"…","properties":{…}}
+// {"@timestamp":"...","level":"INFO","correlationId":"...","source":"...",
+//  "messageTemplate":"...","message":"...","properties":{...}}
 
 func (s *ConsoleSink) writeJSON(e LogEntry) {
 	doc := map[string]any{
@@ -122,10 +121,10 @@ func (s *ConsoleSink) writeJSON(e LogEntry) {
 	s.out.Write([]byte{'\n'}) //nolint:errcheck
 }
 
-// ── helpers ───────────────────────────────────────────────────────────────────
+// helpers
 
 // shortID returns the first 8 hex digits of id, suitable for compact display.
-// UUID format is xxxxxxxx-xxxx-… so id[:8] is always hex, no hyphens.
+// UUID format is xxxxxxxx-xxxx-... so id[:8] is always hex, no hyphens.
 func shortID(id string) string {
 	const width = 8
 	if id == "" {

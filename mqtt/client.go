@@ -29,10 +29,10 @@ type Client struct {
 	raw  paho.Client // underlying paho client
 
 	mu   sync.RWMutex
-	subs map[string]subscription // topic → active subscription
+	subs map[string]subscription // topic -> active subscription
 }
 
-// ─── Constructors ─────────────────────────────────────────────────────────────
+// Constructors
 
 // New creates a new Client using the functional-options pattern, connects to
 // the broker, and returns the ready-to-use client.
@@ -99,7 +99,7 @@ func newClient(opts Options) (*Client, error) {
 	return c, nil
 }
 
-// ─── Subscription ─────────────────────────────────────────────────────────────
+// Subscription
 
 // Subscribe registers handler for the given topic filter and QoS level.
 // topic may include wildcards (+ and #).
@@ -119,7 +119,7 @@ func (c *Client) Subscribe(topic string, qos byte, handler Handler) error {
 	})
 
 	if !token.WaitTimeout(c.opts.WriteTimeout) {
-		// Timed out – remove from subs to avoid ghost re-subscriptions.
+		// Timed out - remove from subs to avoid ghost re-subscriptions.
 		c.mu.Lock()
 		delete(c.subs, topic)
 		c.mu.Unlock()
@@ -136,7 +136,7 @@ func (c *Client) Subscribe(topic string, qos byte, handler Handler) error {
 
 // SubscribeMultiple subscribes to several topic filters in a single SUBSCRIBE
 // packet. All topics share the same handler.
-// filters maps topic filter → desired QoS level.
+// filters maps topic filter -> desired QoS level.
 func (c *Client) SubscribeMultiple(filters map[string]byte, handler Handler) error {
 	c.mu.Lock()
 	for topic, qos := range filters {
@@ -185,7 +185,7 @@ func (c *Client) Unsubscribe(topics ...string) error {
 	return nil
 }
 
-// ─── Publishing ───────────────────────────────────────────────────────────────
+// Publishing
 
 // Publish sends a message and blocks until the broker acknowledges it or the
 // write timeout expires.
@@ -221,7 +221,7 @@ func (c *Client) PublishAsync(topic string, qos byte, retained bool, payload any
 	return ch
 }
 
-// ─── Status / lifecycle ───────────────────────────────────────────────────────
+// Status / lifecycle
 
 // IsConnected reports whether the client currently has an active connection.
 func (c *Client) IsConnected() bool {
@@ -234,7 +234,7 @@ func (c *Client) Disconnect(quiesceMs uint) {
 	c.raw.Disconnect(quiesceMs)
 }
 
-// ─── Internal callbacks ───────────────────────────────────────────────────────
+// Internal callbacks
 
 // onConnect is called by paho on every successful connection, including
 // reconnections. We re-subscribe to all registered topics so sessions are
@@ -265,7 +265,7 @@ func (c *Client) onConnectionLost(_ paho.Client, err error) {
 	}
 }
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+// Helpers
 
 // waitToken is a small helper used internally. Not exported intentionally
 // because callers should use Publish/Subscribe rather than raw tokens.
