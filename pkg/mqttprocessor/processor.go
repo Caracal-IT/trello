@@ -8,15 +8,17 @@ import (
 
 // Processor handles MQTT message processing logic.
 type Processor struct {
-	Name       string
-	ConfigPath string
+	Config Config `yaml:"config"`
+}
+
+type Config struct {
+	Name string `yaml:"name"`
 }
 
 // NewProcessor creates a new MQTT processor instance.
-func NewProcessor(name, configPath string) *Processor {
+func NewProcessor(cfg Config) *Processor {
 	return &Processor{
-		Name:       name,
-		ConfigPath: configPath,
+		Config: cfg,
 	}
 }
 
@@ -26,14 +28,14 @@ func (p *Processor) Run(ctx context.Context) error {
 	ticker := time.NewTicker(5 * time.Second)
 	defer ticker.Stop()
 
-	fmt.Printf("Starting processor: %s (config: %s)\n", p.Name, p.ConfigPath)
+	fmt.Printf("Starting processor: %s\n", p.Config.Name)
 
 	for {
 		select {
 		case <-ticker.C:
-			fmt.Printf("Processor %s is running...\n", p.Name)
+			fmt.Printf("Processor %s is running...\n", p.Config.Name)
 		case <-ctx.Done():
-			fmt.Printf("Stopping processor: %s\n", p.Name)
+			fmt.Printf("Stopping processor: %s\n", p.Config.Name)
 			return ctx.Err()
 		}
 	}
