@@ -11,6 +11,7 @@
       }
     ],
     "filters": ["motor"],
-    "timeout": "10s"
+    "timeout": "10s",
+    "pipeline": ["print"]
   }
 }

@@ -22,10 +22,11 @@ type Config struct {
 }
 
 type SubProcessor struct {
-	Name    string   `json:"name"`
-	Keys    []Key    `json:"keys"`
-	Filters []string `json:"filters"`
-	Timeout string   `json:"timeout"`
+	Name     string   `json:"name"`
+	Keys     []Key    `json:"keys"`
+	Filters  []string `json:"filters"`
+	Timeout  string   `json:"timeout"`
+	Pipeline []string `json:"pipeline"`
 }
 
 type Key struct {
@@ -43,7 +44,7 @@ type subProcessorEngine struct {
 	msgCh  <-chan mqtt.Message
 	ctx    context.Context
 
-	model    map[string]string
+	model    map[string]any
 	payloads []MessagePayload
 	keysDone map[string]bool
 	timeout  time.Duration
@@ -104,7 +105,7 @@ func newSubProcessor(cfg SubProcessor, msgCh <-chan mqtt.Message, ctx context.Co
 		config:   cfg,
 		msgCh:    msgCh,
 		ctx:      ctx,
-		model:    make(map[string]string),
+		model:    make(map[string]any),
 		payloads: []MessagePayload{},
 		keysDone: make(map[string]bool),
 		timeout:  dur,
@@ -123,7 +124,9 @@ func (sp *subProcessorEngine) run() {
 			}
 			sp.handleMessage(msg)
 			if sp.isComplete() {
-				processModel(sp.config.Name, sp.model, sp.payloads)
+				if err := RunPipeline(sp.config.Pipeline, sp.model, sp.payloads); err != nil {
+					fmt.Printf("[%s] pipeline error: %v\n", sp.config.Name, err)
+				}
 				sp.reset()
 				timeoutCh = nil
 			} else if timeoutCh == nil {
@@ -177,14 +180,7 @@ func (sp *subProcessorEngine) isComplete() bool {
 }
 
 func (sp *subProcessorEngine) reset() {
-	sp.model = make(map[string]string)
+	sp.model = make(map[string]any)
 	sp.payloads = []MessagePayload{}
 	sp.keysDone = make(map[string]bool)
-}
-
-func processModel(name string, model map[string]string, payloads []MessagePayload) {
-	fmt.Printf("[%s] processing model: %v\n", name, model)
-	for i, p := range payloads {
-		fmt.Printf("[%s] payload %d - topic: %s, body: %s\n", name, i, p.Topic, p.Payload)
-	}
 }
