@@ -9,7 +9,7 @@ import (
 	"syscall"
 
 	"github.com/example/mqttdemo/logger"
-	"github.com/example/mqttdemo/pkg/mqttprocessor"
+	"github.com/example/mqttdemo/pkg/mqtt_accumulator"
 	"github.com/example/mqttdemo/pkg/mqttservice"
 )
 
@@ -39,19 +39,19 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	// Start MQTT Processor
-	var cfg mqttprocessor.Config
-	data, err := os.ReadFile("config/mqtt_processor.json")
+	// Start MQTT Accumulator
+	var cfg mqtt_accumulator.Config
+	data, err := os.ReadFile("config/mqtt_accumulator.json")
 	if err != nil {
 		log.Fatalf("failed to read config file: %v", err)
 	}
 	if err := json.Unmarshal(data, &cfg); err != nil {
 		log.Fatalf("failed to parse config: %v", err)
 	}
-	processor := mqttprocessor.NewProcessor(cfg)
+	accumulator := mqtt_accumulator.NewAccumulator(cfg)
 	go func() {
-		if err := processor.Run(ctx); err != nil {
-			log.Printf("processor error: %v", err)
+		if err := accumulator.Run(ctx); err != nil {
+			log.Printf("accumulator error: %v", err)
 		}
 	}()
 
