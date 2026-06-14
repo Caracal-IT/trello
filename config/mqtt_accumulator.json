@@ -1,3 +1,5 @@
 {
-  "name": "mqtt-accumulator"
+  "name": "mqtt-accumulator",
+  "broker": "tcp://localhost:1883",
+  "topics": ["mqttdemo/#"]
 }
